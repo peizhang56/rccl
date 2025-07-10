@@ -733,14 +733,13 @@ if (BUILD_TESTS)
   foreach(srcfile ${TEST_NONSTATIC_SOURCE_FILES})
     add_custom_command(
       OUTPUT "${srcfile}.staticbak"
-      COMMAND bash -c "
-        if [ ! -f '${srcfile}.staticbak' ]; then \\
-          ${CMAKE_COMMAND} -E copy '${srcfile}' '${srcfile}.staticbak' && \\
-          ${CMAKE_COMMAND} -E echo 'Exposing internal functions/variables in ${srcfile}' && \\
-          ${REPLACE_SCRIPT} ${srcfile} --replace-vars --exclude-list=${exclude_list} 2>&1;
-        else \\
-          ${CMAKE_COMMAND} -E echo 'Backup already exists for ${srcfile}, skipping exposing internal functions/variables';
-        fi
+      COMMAND bash -c "if [ ! -f '${srcfile}.staticbak' ]; then \
+          ${CMAKE_COMMAND} -E copy '${srcfile}' '${srcfile}.staticbak' && \
+          ${CMAKE_COMMAND} -E echo 'Exposing internal functions/variables in ${srcfile}' && \
+          ${REPLACE_SCRIPT} ${srcfile} --replace-vars --exclude-list=${exclude_list} 2>&1; \
+        else \
+          ${CMAKE_COMMAND} -E echo 'Backup already exists for ${srcfile}, skipping exposing internal functions/variables'; \
+        fi\
       "
       DEPENDS "${srcfile}" "${REPLACE_SCRIPT}"
       COMMENT "Removing static from ${srcfile} (backup at ${srcfile}.staticbak)"

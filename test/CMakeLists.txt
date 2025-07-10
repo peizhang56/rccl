@@ -82,6 +82,7 @@ if(BUILD_TESTS)
     set(TEST_FIXTURE_SOURCE_FILES
       AltRsmiTests.cpp
       ArgCheckTests.cpp
+      BitOpsTests.cpp
       common/main_fixtures.cpp
       common/EnvVars.cpp
     )
