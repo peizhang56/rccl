@@ -624,8 +624,8 @@ struct ncclComm {
   struct ncclIntruQueue<struct ncclCommEventCallback, &ncclCommEventCallback::next> eventCallbackQueue;
 
   // user-created reduction ops
-  int userRedOpCapacity, userRedOpFreeHead;
-  ncclUserRedOp *userRedOps;
+  int userRedOpCapacity{}, userRedOpFreeHead;
+  ncclUserRedOp *userRedOps{nullptr}; 
 
   // Queue of things for the main thread to do
   struct ncclIntruQueueMpsc<struct ncclCommCallback, &ncclCommCallback::next> callbackQueue;
