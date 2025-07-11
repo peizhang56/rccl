@@ -9,6 +9,11 @@ if(BUILD_TESTS)
 
   message("Building rccl unit tests (Installed in /test/rccl-UnitTests)")
 
+  if (ENABLE_CODE_COVERAGE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
+    set(HIPCC_COMPILE_FLAGS "${HIPCC_COMPILE_FLAGS} -fprofile-instr-generate -fcoverage-mapping")
+  endif()
+
   find_package(hsa-runtime64 PATHS /opt/rocm )
   if(${hsa-runtime64_FOUND})
     message("hsa-runtime64 found @  ${hsa-runtime64_DIR} ")
