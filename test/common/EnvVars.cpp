@@ -76,7 +76,7 @@ namespace RcclUnitTesting
       if (write(pipefd[1], &dev, sizeof(dev)) != sizeof(dev)) return TEST_FAIL;
       close(pipefd[0]);
       close(pipefd[1]);
-      exit(EXIT_SUCCESS);
+      _exit(EXIT_SUCCESS);
     }
     else
     {
@@ -197,105 +197,6 @@ namespace RcclUnitTesting
     // NOTE: Cannot use HIP call prior to launching unless it is inside another child process
     numDetectedGpus = 0;
     getDeviceCount(&numDetectedGpus);
-    numDetectedGpus = min(numDetectedGpus, 16);
-    isGfx94 = false;
-    getArchInfo(&isGfx94, "gfx94");
-    isGfx12 = false;
-    getArchInfo(&isGfx12, "gfx12");
-    isGfx90 = false;
-    getArchInfo(&isGfx90, "gfx90");
-
-    debugPause     = GetEnvVar("UT_DEBUG_PAUSE" , 0);
-    showNames      = GetEnvVar("UT_SHOW_NAMES"  , 1);
-    minGpus        = GetEnvVar("UT_MIN_GPUS"    , 1);
-    maxGpus        = GetEnvVar("UT_MAX_GPUS"    , numDetectedGpus);
-    processMask    = GetEnvVar("UT_PROCESS_MASK", UT_SINGLE_PROCESS | UT_MULTI_PROCESS);
-    verbose        = GetEnvVar("UT_VERBOSE"     , 0);
-    printValues    = GetEnvVar("UT_PRINT_VALUES", 0);
-    maxRanksPerGpu = GetEnvVar("UT_MAX_RANKS_PER_GPU", 1);
-    showTiming     = GetEnvVar("UT_SHOW_TIMING",  1);
-    useInteractive = GetEnvVar("UT_INTERACTIVE",  0);
-    timeoutUs      = GetEnvVar("UT_TIMEOUT_US" ,  5000000);
-    useMultithreading = GetEnvVar("UT_MULTITHREAD", false);
-
-    // Total number of reduction ops
-    int numOps = ncclNumOps;
-
-    gpuPriorityOrder.resize(numDetectedGpus);
-    for(int i=0;i<numDetectedGpus;i++){
-      gpuPriorityOrder[i] = i;
-    }
-    bool isCpxMode = false;
-    if(isGfx94) {
-      getDeviceMode(&isCpxMode);
-      if(isCpxMode) {
-        getDevicePriority(&gpuPriorityOrder);
-      }
-    }
-
-    // Test only pow2 number of GPUs for cpx mode to reduce the runtime for UT
-    onlyPow2Gpus   = GetEnvVar("UT_POW2_GPUS"   , isCpxMode); // Default value set based on whether system is in CPX mode. UT_POW2_GPUS set by user overrides it.
-
-    std::vector<std::string> redOpStrings = GetEnvVarsList("UT_REDOPS");
-    for (auto s : redOpStrings)
-    {
-      for (int i = 0; i < numOps; ++i)
-      {
-        if (!strcmp(s.c_str(), ncclRedOpNames[i]))
-        {
-          redOps.push_back((ncclRedOp_t)i);
-          break;
-        }
-      }
-    }
-    // Default back to all ops if no strings are found
-    if (redOps.empty())
-    {
-      for (int i = 0; i < numOps; i++)
-        redOps.push_back((ncclRedOp_t)i);
-    }
-
-    // Limit number of supported datatypes if only allReduce is built
-    std::vector<std::string> dtStrings = GetEnvVarsList("UT_DATATYPES");
-    for (auto s : dtStrings)
-    {
-      for (int i = 0; i < ncclNumTypes; ++i)
-      {
-        if (!strcmp(s.c_str(), ncclDataTypeNames[i]))
-        {
-          dataTypes.push_back((ncclDataType_t)i);
-        }
-      }
-    }
-
-    // Default option if no valid datatypes are found in env var
-    if (dataTypes.empty())
-    {
-      dataTypes.push_back(ncclFloat32);
-      dataTypes.push_back(ncclInt8);
-      dataTypes.push_back(ncclUint8);
-      dataTypes.push_back(ncclInt32);
-      dataTypes.push_back(ncclUint32);
-      dataTypes.push_back(ncclInt64);
-      dataTypes.push_back(ncclUint64);
-      dataTypes.push_back(ncclFloat16);
-      dataTypes.push_back(ncclFloat32);
-      dataTypes.push_back(ncclFloat64);
-      dataTypes.push_back(ncclBfloat16);
-      dataTypes.push_back(ncclFloat8e4m3);
-      dataTypes.push_back(ncclFloat8e5m2);
-    }
-
-    // Build list of possible # GPU ranks based on env vars
-    numGpusList.clear();
-    for (int i = minGpus; i <= maxGpus; i++)
-      if (!onlyPow2Gpus || ((i & (i-1)) == 0))
-        numGpusList.push_back(i);
-
-    // Build isMultiProcessList
-    isMultiProcessList.clear();
-    if (this->processMask & UT_SINGLE_PROCESS) isMultiProcessList.push_back(0);
-    if (this->processMask & UT_MULTI_PROCESS)  isMultiProcessList.push_back(1);
   }
 
   std::vector<ncclRedOp_t> const& EnvVars::GetAllSupportedRedOps()
